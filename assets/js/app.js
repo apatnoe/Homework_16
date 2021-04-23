@@ -5,7 +5,7 @@ var svgHeight = 500;
 
 var margin = {
   top: 20,
-  right: 40,
+  right: 20,
   bottom: 80,
   left: 80
 };
@@ -24,76 +24,6 @@ var svg = d3
 // Append an SVG group
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-// // Initial Params
-// var chosenXAxis = "hair_length";
-
-// // function used for updating x-scale var upon click on axis label
-// function xScale(censusData, chosenXAxis) {
-//   // create scales
-//   var xLinearScale = d3.scaleLinear()
-//     .domain([d3.min(censusData, d => d[chosenXAxis]) * 0.8,
-//       d3.max(censusData, d => d[chosenXAxis]) * 1.2
-//     ])
-//     .range([0, width]);
-
-//   return xLinearScale;
-
-// }
-
-// // function used for updating xAxis var upon click on axis label
-// function renderAxes(newXScale, xAxis) {
-//   var bottomAxis = d3.axisBottom(newXScale);
-
-//   xAxis.transition()
-//     .duration(1000)
-//     .call(bottomAxis);
-
-//   return xAxis;
-// }
-
-// // function used for updating circles group with a transition to
-// // new circles
-// function renderCircles(circlesGroup, newXScale, chosenXAxis) {
-
-//   circlesGroup.transition()
-//     .duration(1000)
-//     .attr("cx", d => newXScale(d[chosenXAxis]));
-
-//   return circlesGroup;
-// }
-
-// function used for updating circles group with new tooltip
-// function updateToolTip(chosenXAxis, circlesGroup) {
-
-//   var label;
-
-//   if (chosenXAxis === "hair_length") {
-//     label = "Hair Length:";
-//   }
-//   else {
-//     label = "# of Albums:";
-//   }
-
-//   var toolTip = d3.tip()
-//     .attr("class", "tooltip")
-//     .offset([80, -60])
-//     .html(function(d) {
-//       return (`${d.rockband}<br>${label} ${d[chosenXAxis]}`);
-//     });
-
-//   circlesGroup.call(toolTip);
-
-//   circlesGroup.on("mouseover", function(data) {
-//     toolTip.show(data);
-//   })
-//     // onmouseout event
-//     .on("mouseout", function(data, index) {
-//       toolTip.hide(data);
-//     });
-
-//   return circlesGroup;
-// }
 
 // Retrieve data from the CSV file and execute everything below
 d3.csv("/assets/data/data.csv").then(function(censusData, err) {
@@ -139,15 +69,18 @@ d3.csv("/assets/data/data.csv").then(function(censusData, err) {
     .attr("cx", d => xLinearScale(d.poverty))
     .attr("cy", d => yLinearScale(d.healthcareLow))
     .attr("r", 10)
-    .attr("fill", "#ADD8E6")
-    .style("stroke", "#DCDCDC") 
-    .attr("text", d => d.abbr);
+    .classed("stateCircle", true); 
 
-  circlesGroup.append("text")
-    .text(function(d){return d.abbr})
-    .attr({
-      "text-anchor": "middle",
-    });
+  var statesGroup = chartGroup.selectAll("text")
+    .data(censusData)
+    .enter()
+    .append("text")
+    .attr("dx", d => xLinearScale(d.poverty))
+    .attr("dy", d => yLinearScale(d.healthcareLow)+3)
+    .text(d => d.abbr)
+    .style("font", "10px times")
+    .classed("stateText", true)
+    .attr("text-anchor","middle");
 
     // append x axis
   chartGroup.append("text")
@@ -170,6 +103,7 @@ d3.csv("/assets/data/data.csv").then(function(censusData, err) {
     .classed("axis-text", true)
     .text("Lacks Healthcare (%)");
 
-  }
-);
+}).catch(function(error) {
+  console.log(error);
+});
 
